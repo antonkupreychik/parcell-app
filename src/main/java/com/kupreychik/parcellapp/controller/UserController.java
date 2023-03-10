@@ -80,4 +80,6 @@ public class UserController {
         var courier = userService.createCourier(command);
         return ResponseEntity.ok().body(courier);
     }
+
+
 }

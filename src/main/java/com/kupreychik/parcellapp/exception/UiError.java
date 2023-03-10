@@ -10,8 +10,19 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum UiError {
 
-    ROLE_NOT_FOUND("Role not found", 1);
-
+    ROLE_NOT_FOUND("Role not found", 1),
+    EMAIL_ALREADY_EXIST("Email already exist", 2),
+    USER_NOT_FOUND("User not found", 3),
+    ADDRESS_NOT_FOUND("Address not found", 4),
+    PARCEL_NOT_AVAILABLE_TO_CHANGE_ADDRESS("Parcel not available to change address", 5),
+    PARCEL_NOT_AVAILABLE_TO_CANCEL("Parcel not available to cancel", 6),
+    USER_IS_NOT_COURIER("User is not courier", 7),
+    PARCEL_NOT_FOUND("Parcel not found", 8),
+    PARCEL_NOT_AVAILABLE_TO_ASSIGN_COURIER("Parcel not available to assign courier", 9),
+    COURIER_LIMIT_PER_PARCEL_EXCEEDED("Courier limit per parcel exceeded", 10),
+    PARCEL_ALREADY_ASSIGNED_TO_COURIER("Parcel already assigned to courier", 11),
+    MAX_PARCEL_COUNT_REACHED("Max parcel count reached", 12),
+    CONFIG_NOT_FOUND("Config not found", 13);
     /**
      * Message of error which will be shown to user
      */

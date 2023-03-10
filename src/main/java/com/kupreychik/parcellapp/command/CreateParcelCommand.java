@@ -1,14 +1,15 @@
 package com.kupreychik.parcellapp.command;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * Create parcel command. Used to create parcel
@@ -53,4 +54,9 @@ public class CreateParcelCommand implements Command {
     @Size(min = 3, max = 50)
     @Schema(description = "Description of parcel", example = "Parcel 1")
     private String description;
+
+
+    @NotNull
+    @Schema(description = "Address of parcel destination")
+    private CreateAddressCommand address;
 }

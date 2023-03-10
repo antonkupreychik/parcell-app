@@ -16,13 +16,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
-@Table(name = "parcel")
+@Table(name = "parcels")
 @Getter
 @Setter
 @ToString
@@ -50,9 +50,6 @@ public class Parcel {
     @Column(name = "length")
     private Double length;
 
-    @Column(name = "price")
-    private BigDecimal price;
-
     @Column(name = "description")
     private String description;
 
@@ -62,7 +59,15 @@ public class Parcel {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;
+    private User customer;
+
+    @OneToOne(cascade = javax.persistence.CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    private Address address;
+
+    @ManyToOne
+    @JoinColumn(name = "courier_id", referencedColumnName = "id")
+    private User courier;
 
 
     @Override

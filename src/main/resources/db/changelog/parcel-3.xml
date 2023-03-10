@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet id="parcel-3-0" author="Anton Kupreychik">
+        <createTable tableName="parcel_history">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="parcel_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="parcel-3-1" author="Anton Kupreychik">
+        <createSequence sequenceName="parcel_history_id_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="parcel-3-2" author="Anton Kupreychik">
+        <addForeignKeyConstraint baseTableName="parcel_history"
+                                 baseColumnNames="parcel_id"
+                                 constraintName="fk_parcel_history_parcels"
+                                 referencedTableName="parcels"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="parcel-3-3" author="Anton Kupreychik">
+        <addColumn tableName="parcels">
+            <column name="courier_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="parcel-3-4" author="Anton Kupreychik">
+        <addForeignKeyConstraint baseTableName="parcels"
+                                 baseColumnNames="courier_id"
+                                 constraintName="fk_parcels_couriers"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+
+</databaseChangeLog>

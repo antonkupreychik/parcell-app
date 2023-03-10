@@ -31,8 +31,8 @@ public class ExceptionController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ParcelException.class)
     public UiErrorDTO handleParcelException(ParcelException e) {
-        var uiErrorDTO = new UiErrorDTO(e.getMessage(), e.getUiError().getCode());
-        log.warn("Parcel exception: {}", e.getMessage());
+        var uiErrorDTO = new UiErrorDTO(e.getUiError().getMessage(), e.getUiError().getCode());
+        log.warn("Parcel exception: {}", e.getUiError().getMessage());
         return uiErrorDTO;
     }
 

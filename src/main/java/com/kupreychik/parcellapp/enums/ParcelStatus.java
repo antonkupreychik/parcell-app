@@ -10,6 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ParcelStatus {
     NEW("New"),
+    ASSIGNED("Assigned"),
     IN_PROGRESS("In progress"),
     DELIVERED("Delivered"),
     CANCELED("Canceled");

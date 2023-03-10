@@ -60,7 +60,7 @@
     </changeSet>
 
     <changeSet id="parcel-1-6" author="Anton Kupreychik">
-        <createTable tableName="parcel">
+        <createTable tableName="parcels">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -79,9 +79,6 @@
             <column name="length" type="decimal(10,2)">
                 <constraints nullable="false"/>
             </column>
-            <column name="price" type="decimal(10,2)">
-                <constraints nullable="false"/>
-            </column>
             <column name="description" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
@@ -95,7 +92,7 @@
     </changeSet>
 
     <changeSet id="parcel-1-7" author="Anton Kupreychik">
-        <addForeignKeyConstraint baseTableName="parcel" baseColumnNames="user_id"
+        <addForeignKeyConstraint baseTableName="parcels" baseColumnNames="user_id"
                                  constraintName="fk_parcel_user_id"
                                  referencedTableName="users"
                                  referencedColumnNames="id"

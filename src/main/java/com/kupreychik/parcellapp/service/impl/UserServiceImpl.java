@@ -12,6 +12,7 @@ import com.kupreychik.parcellapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.kupreychik.parcellapp.enums.RoleName.ROLE_COURIER;
 import static com.kupreychik.parcellapp.enums.RoleName.ROLE_USER;
@@ -36,9 +37,11 @@ public class UserServiceImpl implements UserService {
      * @return created user
      */
     @Override
+    @Transactional
     public UserDTO createUser(CreateUserCommand createUserCommand) {
         try {
             log.info("Creating user with command: {}", createUserCommand);
+            checkForEmailAlreadyExist(createUserCommand);
             User user = userMapper.mapToEntity(createUserCommand);
             setRoleForUser(user, ROLE_USER);
             user = userRepository.save(user);
@@ -57,9 +60,11 @@ public class UserServiceImpl implements UserService {
      * @return created courier
      */
     @Override
+    @Transactional
     public UserDTO createCourier(CreateUserCommand createUserCommand) {
         try {
             log.info("Creating courier with command: {}", createUserCommand);
+            checkForEmailAlreadyExist(createUserCommand);
             User user = userMapper.mapToEntity(createUserCommand);
             setRoleForUser(user, ROLE_COURIER);
             user = userRepository.save(user);
@@ -71,8 +76,25 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public User findUserByUserId(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> createParcelException(UiError.USER_NOT_FOUND));
+    }
+
     /**
-     * Find role by name and set it to user
+     * Check if email already exists. If exist throw exception
+     *
+     * @param createUserCommand command to create user
+     */
+    private void checkForEmailAlreadyExist(CreateUserCommand createUserCommand) {
+        if (isEmailExist(createUserCommand.getEmail())) {
+            throw createParcelException(UiError.EMAIL_ALREADY_EXIST);
+        }
+    }
+
+    /**
+     * Find a role by name and set it to user
      *
      * @param user user
      * @param role role
@@ -80,5 +102,16 @@ public class UserServiceImpl implements UserService {
     private void setRoleForUser(User user, RoleName role) {
         user.setRole(roleRepository.findByName(role.name())
                 .orElseThrow(() -> createParcelException(UiError.ROLE_NOT_FOUND)));
+    }
+
+
+    /**
+     * Check if email already exists
+     *
+     * @param email email
+     * @return true, if email already exists
+     */
+    private boolean isEmailExist(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 }
