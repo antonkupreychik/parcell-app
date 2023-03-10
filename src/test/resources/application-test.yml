@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    username: test
+    url: jdbc:tc:postgresql:9.6.8://localhost/test
+    password: password
+  liquibase:
+    change-log: classpath:db/liquibase-changeLog.xml
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none

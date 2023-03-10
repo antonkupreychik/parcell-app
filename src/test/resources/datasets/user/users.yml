@@ -1,0 +1,15 @@
+role:
+  - id: 1
+    name: 'admin'
+
+users:
+  - id: 1
+    name: 'me'
+    password: 'password'
+    email: 'email@email.com'
+    role: 1
+  - id: 2
+    name: 'another'
+    password: 'password'
+    email: 'not_email@email.com'
+    role: 1

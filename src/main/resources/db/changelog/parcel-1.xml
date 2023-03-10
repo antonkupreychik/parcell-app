@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <changeSet id="parcel-1-0" author="Anton Kupreychik">
+        <createTable tableName="users">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="parcel-1-1" author="Anton Kupreychik">
+        <createTable tableName="roles">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="parcel-1-3" author="Anton Kupreychik">
+        <createSequence sequenceName="users_id_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="parcel-1-4" author="Anton Kupreychik">
+        <insert tableName="roles">
+            <column name="id" value="1"/>
+            <column name="name" value="ROLE_ADMIN"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="id" value="2"/>
+            <column name="name" value="ROLE_USER"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="id" value="3"/>
+            <column name="name" value="ROLE_COURIER"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="parcel-1-5" author="Anton Kupreychik">
+        <addForeignKeyConstraint baseTableName="users" baseColumnNames="role"
+                                 constraintName="fk_users_role"
+                                 referencedTableName="roles" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="parcel-1-6" author="Anton Kupreychik">
+        <createTable tableName="parcel">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="weight" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="width" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="height" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="length" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="parcel-1-7" author="Anton Kupreychik">
+        <addForeignKeyConstraint baseTableName="parcel" baseColumnNames="user_id"
+                                 constraintName="fk_parcel_user_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="parcel-1-8" author="Anton Kupreychik">
+        <createSequence sequenceName="parcel_id_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+</databaseChangeLog>
