@@ -11,5 +11,6 @@ public class ParcelDTO {
     private Double length;
     private String description;
     private String status;
+    private Double price;
     private AddressDTO address;
 }

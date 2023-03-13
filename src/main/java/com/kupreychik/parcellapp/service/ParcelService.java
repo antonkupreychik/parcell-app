@@ -14,9 +14,7 @@ public interface ParcelService {
 
     ParcelDTO getParcelById(Long userId, Long parcelId);
 
-    PageDTO<ParcelShortDTO> getMyParcels(Long userId, String search, Pageable pageable);
-
-    PageDTO<ParcelShortDTO> getMyParcelsByStatus(ParcelStatus status, Long userId, String search, Pageable pageable);
+    PageDTO<ParcelShortDTO> getMyParcels(ParcelStatus[] statuses, Long userId, String search, Pageable pageable);
 
     ParcelDTO updateParcelAddress(Long userId, Long parcelId, CreateAddressCommand createAddressCommand);
 

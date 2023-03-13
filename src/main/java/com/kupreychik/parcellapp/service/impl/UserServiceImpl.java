@@ -116,20 +116,31 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public UserBalanceDTO getUserBalance(Long userId) {
+        try {
+            log.info("Getting user balance with id: {}", userId);
+            User user = findUserByUserId(userId);
+            return userMapper.mapToUserBalanceDTO(user);
+        } catch (Exception e) {
+            log.error("Error while getting user balance with id: {}", userId);
+            throw e;
+        }
+    }
+
     /**
      * Decrease user balance
      *
      * @param command command to update user balance
      * @param user    user
      */
-    private User decreaseBalance(UpdateUserBalanceCommand command, User user) {
+    private void decreaseBalance(UpdateUserBalanceCommand command, User user) {
         BigDecimal balance = user.getBalance();
         BigDecimal balanceAfterOperation = balance.subtract(command.getAmount());
         if (balanceAfterOperation.compareTo(BigDecimal.ZERO) < 0) {
             throw createParcelException(UiError.BALANCE_IS_NOT_ENOUGH);
         }
         user.setBalance(balanceAfterOperation);
-        return user;
     }
 
     /**
@@ -138,11 +149,10 @@ public class UserServiceImpl implements UserService {
      * @param command command to update user balance
      * @param user    user
      */
-    private User increaseBalance(UpdateUserBalanceCommand command, User user) {
+    private void increaseBalance(UpdateUserBalanceCommand command, User user) {
         log.info("Adding balance to user with id: {}", user.getId());
         BigDecimal balance = user.getBalance().add(command.getAmount());
         user.setBalance(balance);
-        return user;
     }
 
     /**

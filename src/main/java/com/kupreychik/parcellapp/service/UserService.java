@@ -15,4 +15,6 @@ public interface UserService {
     User findUserByUserId(Long userId);
 
     UserBalanceDTO updateUserBalance(UpdateUserBalanceCommand command);
+
+    UserBalanceDTO getUserBalance(Long userId);
 }

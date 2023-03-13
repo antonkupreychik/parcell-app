@@ -26,6 +26,7 @@ import com.kupreychik.parcellapp.service.ParcelService;
 import com.kupreychik.parcellapp.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,46 +104,35 @@ public class ParcelServiceImpl implements ParcelService {
         }
     }
 
-
-    /**
-     * Get parcel page
-     *
-     * @param userId   user id
-     * @param pageable pageable
-     * @return {@link PageDTO} with parcel data
-     */
-    @Override
-    @Transactional
-    public PageDTO<ParcelShortDTO> getMyParcels(Long userId, String search, Pageable pageable) {
-        try {
-            log.info("Getting parcel by id: {}", userId);
-            search = nonNull(search) ? search.toLowerCase() : "";
-            var parcelPage = parcelRepository.findAllByUserId(userId, search, pageable);
-            return new PageDTO<>(parcelPage, pageable);
-        } catch (Exception e) {
-            log.error("Error while getting parcel by id: {}", userId, e);
-            throw e;
-        }
-    }
-
     /**
      * Get parcel page by status
      *
-     * @param status   parcel status
+     * @param statuses   parcel statuses
      * @param userId   user id
      * @param pageable pageable
      * @return {@link PageDTO} with parcel data
      */
     @Override
     @Transactional
-    public PageDTO<ParcelShortDTO> getMyParcelsByStatus(ParcelStatus status, Long userId, String search, Pageable pageable) {
+    public PageDTO<ParcelShortDTO> getMyParcels(ParcelStatus[] statuses, Long userId, String search, Pageable pageable) {
         try {
-            log.info("Getting parcel by status: {} and user id: {}", status, userId);
+            log.info("Getting parcel by statuses: {} and user id: {}", statuses, userId);
             search = nonNull(search) ? search.toLowerCase() : "";
-            var parcelPage = parcelRepository.findAllByStatusAndCustomerId(status, userId, search, pageable);
+            var user = userService.findUserByUserId(userId);
+            var role = user.getRole().getName();
+            Page<ParcelShortDTO> parcelPage;
+            if (role.equals(RoleName.ROLE_COURIER.name())) {
+                log.info("Getting parcel by courier id: {}", userId);
+                parcelPage = parcelRepository.findAllByCourierIdAndStatus(userId, search, statuses, pageable);
+            } else if (role.equals(RoleName.ROLE_USER.name())) {
+                log.info("Getting parcel by user id: {}", userId);
+                parcelPage = parcelRepository.findAllByCustomerIdAndStatus(userId, search, statuses, pageable);
+            } else {
+                throw createParcelException(UiError.USER_NOT_FOUND);
+            }
             return new PageDTO<>(parcelPage, pageable);
         } catch (Exception e) {
-            log.error("Error while getting parcel by status: {} and user id: {}", status, userId, e);
+            log.error("Error while getting parcel by status: {} and user id: {}", statuses, userId, e);
             throw e;
         }
     }
