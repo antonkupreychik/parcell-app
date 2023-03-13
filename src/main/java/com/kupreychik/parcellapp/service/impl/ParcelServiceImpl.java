@@ -236,8 +236,6 @@ public class ParcelServiceImpl implements ParcelService {
             checkForAvailableToAssignCourier(parcel, courier);
             parcel = setAdditionalParamsToParcelAndAssignCourier(parcel, courier, customer);
             var parcelDTO = parcelMapper.mapToDTO(parcel);
-            //todo решить проблему с маппингом и перенести ее в маппер
-            parcelDTO.setAddress(addressService.getAddressById(parcel.getAddress().getId()));
             log.info("Courier assigned. Parcel id: {}, courier id: {}", parcelId, courierId);
             parcelHistoryService.changeStatus(parcel.getId(), ParcelStatus.ASSIGNED);
             return parcelDTO;
@@ -263,8 +261,6 @@ public class ParcelServiceImpl implements ParcelService {
             parcel.setStatus(status);
             parcel = parcelRepository.save(parcel);
             var parcelDTO = parcelMapper.mapToDTO(parcel);
-            //todo решить проблему с маппингом и перенести ее в маппер
-            parcelDTO.setAddress(addressService.getAddressById(parcel.getAddress().getId()));
             log.info("Parcel status changed. Parcel id: {}, status: {}", parcelId, status);
             parcelHistoryService.changeStatus(parcel.getId(), status);
             return parcelDTO;
@@ -458,7 +454,6 @@ public class ParcelServiceImpl implements ParcelService {
      * @return parcel with added params
      */
     private Parcel addParamsAndSave(CreateParcelCommand createParcelCommand, Long userId, Parcel parcel) {
-        parcel.setStatus(ParcelStatus.NEW);
         parcel.setCustomer(userService.findUserByUserId(userId));
         parcel.setPrice(calculatePreliminaryPrice(createParcelCommand, userId));
         parcel = parcelRepository.save(parcel);
@@ -529,8 +524,8 @@ public class ParcelServiceImpl implements ParcelService {
     /**
      * Withdraw money from user
      *
-     * @param userId         user id
-     * @param value parcel
+     * @param userId user id
+     * @param value  parcel
      */
     private void processPaymentForUser(Long userId, BigDecimal value, OperationType operationType) {
         log.info("Trying to withdraw money from user with id: {}", userId);
