@@ -14,14 +14,16 @@ import com.kupreychik.parcellapp.repository.UserRepository;
 import com.kupreychik.parcellapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
-import static com.kupreychik.parcellapp.enums.RoleName.ROLE_COURIER;
-import static com.kupreychik.parcellapp.enums.RoleName.ROLE_USER;
 import static com.kupreychik.parcellapp.exception.ParcelExceptionUtils.createParcelException;
+import static java.lang.String.format;
 
 /**
  * User service
@@ -29,12 +31,10 @@ import static com.kupreychik.parcellapp.exception.ParcelExceptionUtils.createPar
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
-
+public class UserServiceImpl implements UserService, UserDetailsService {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
     /**
      * Create user
      *
@@ -48,12 +48,12 @@ public class UserServiceImpl implements UserService {
             log.info("Creating user with command: {}", createUserCommand);
             checkForEmailAlreadyExist(createUserCommand);
             User user = userMapper.mapToEntity(createUserCommand);
-            setRoleForUser(user, ROLE_USER);
+            setRoleForUser(user, RoleName.ROLE_USER);
             user = userRepository.save(user);
             log.info("User created with id: {}", user.getId());
             return userMapper.mapToDTO(user);
         } catch (Exception e) {
-            log.error("Error while creating user. Command: {}", createUserCommand);
+            log.error("Error while creating user. Command: {}", createUserCommand, e);
             throw e;
         }
     }
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
             log.info("Creating courier with command: {}", createUserCommand);
             checkForEmailAlreadyExist(createUserCommand);
             User user = userMapper.mapToEntity(createUserCommand);
-            setRoleForUser(user, ROLE_COURIER);
+            setRoleForUser(user, RoleName.ROLE_COURIER);
             user = userRepository.save(user);
             log.info("Courier created with id: {}", user.getId());
             return userMapper.mapToDTO(user);
@@ -172,9 +172,12 @@ public class UserServiceImpl implements UserService {
      * @param user user
      * @param role role
      */
-    private void setRoleForUser(User user, RoleName role) {
-        user.setRole(roleRepository.findByName(role.name())
-                .orElseThrow(() -> createParcelException(UiError.ROLE_NOT_FOUND)));
+    private void setRoleForUser(User user, String role) {
+        roleRepository.findByAuthority(role).ifPresentOrElse(
+                user::setRole,
+                () -> {
+                    throw createParcelException(UiError.ROLE_NOT_FOUND);
+                });
     }
 
 
@@ -187,4 +190,16 @@ public class UserServiceImpl implements UserService {
     private boolean isEmailExist(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(
+                        () ->
+                                new UsernameNotFoundException(
+                                        format("User with username - %s, not found", username)));
+    }
+
 }

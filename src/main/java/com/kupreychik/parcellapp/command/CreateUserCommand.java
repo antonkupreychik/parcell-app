@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -21,13 +22,14 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Setter
 @Schema(description = "Create user command")
 public class CreateUserCommand implements Command {
 
     @NotBlank
     @Size(min = 3, max = 50)
-    @Schema(description = "Name of user", example = "User 1")
-    private String name;
+    @Schema(description = "Username of user", example = "User 1")
+    private String username;
 
     @Email
     @Schema(description = "Email of user", example = "email@email.com")
@@ -47,7 +49,7 @@ public class CreateUserCommand implements Command {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("name", name)
+                .append("name", username)
                 .append("email", email)
                 .append("coordinates", coordinates)
                 .toString();

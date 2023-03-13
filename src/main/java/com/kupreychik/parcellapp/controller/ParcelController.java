@@ -7,6 +7,7 @@ import com.kupreychik.parcellapp.dto.ParcelDTO;
 import com.kupreychik.parcellapp.dto.ParcelShortDTO;
 import com.kupreychik.parcellapp.dto.UiErrorDTO;
 import com.kupreychik.parcellapp.enums.ParcelStatus;
+import com.kupreychik.parcellapp.enums.RoleName;
 import com.kupreychik.parcellapp.service.ParcelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
 @Slf4j
@@ -37,7 +39,7 @@ public class ParcelController {
 
     private final ParcelService parcelService;
 
-    //user
+    @RolesAllowed(RoleName.ROLE_USER)
     @PostMapping
     @Operation(description = "Create parcel",
             summary = "Create parcel",
@@ -69,6 +71,8 @@ public class ParcelController {
         return ResponseEntity.ok().body(parcel);
     }
 
+
+    @RolesAllowed({RoleName.ROLE_USER, RoleName.ROLE_COURIER, RoleName.ROLE_ADMIN})
     @GetMapping
     @Operation(description = "Get parcels by status and user id",
             summary = "Get parcels by status and user id",
@@ -103,7 +107,7 @@ public class ParcelController {
         return ResponseEntity.ok().body(parcels);
     }
 
-    //all
+    @RolesAllowed({RoleName.ROLE_USER, RoleName.ROLE_COURIER, RoleName.ROLE_ADMIN})
     @GetMapping("/{id}")
     @Operation(description = "Get parcel by id",
             summary = "Get parcel by id",
@@ -128,7 +132,7 @@ public class ParcelController {
         return ResponseEntity.ok().body(parcel);
     }
 
-    //only for users
+    @RolesAllowed(RoleName.ROLE_USER)
     @PostMapping("/{parcelId}/address")
     @Operation(description = "Change parcel address",
             summary = "Change parcel address",
@@ -162,7 +166,7 @@ public class ParcelController {
         return ResponseEntity.ok().body(parcel);
     }
 
-    //only user admin
+    @RolesAllowed({RoleName.ROLE_USER, RoleName.ROLE_ADMIN})
     @PostMapping("/{parcelId}/cancel")
     @Operation(description = "Cancel parcel",
             summary = "Cancel parcel",
@@ -187,7 +191,7 @@ public class ParcelController {
         return ResponseEntity.noContent().build();
     }
 
-    //only admin method
+    @RolesAllowed(RoleName.ROLE_ADMIN)
     @PostMapping("/{parcelId}/assign/{courierId}}")
     @Operation(description = "Assign parcel to courier",
             summary = "Assign parcel to courier",
@@ -212,7 +216,7 @@ public class ParcelController {
         return ResponseEntity.ok().body(parcel);
     }
 
-    //only admin and courier method
+    @RolesAllowed({RoleName.ROLE_ADMIN, RoleName.ROLE_COURIER})
     @PostMapping("/{parcelId}/status/{status}")
     @Operation(description = "Change parcel status",
             summary = "Change parcel status",
@@ -236,6 +240,4 @@ public class ParcelController {
         var parcel = parcelService.changeParcelStatus(parcelId, status);
         return ResponseEntity.ok().body(parcel);
     }
-
-
 }

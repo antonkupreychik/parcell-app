@@ -3,6 +3,7 @@ package com.kupreychik.parcellapp.controller;
 import com.kupreychik.parcellapp.command.UpdateUserBalanceCommand;
 import com.kupreychik.parcellapp.dto.UiErrorDTO;
 import com.kupreychik.parcellapp.dto.UserBalanceDTO;
+import com.kupreychik.parcellapp.enums.RoleName;
 import com.kupreychik.parcellapp.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
 /**
@@ -30,7 +32,7 @@ public class BalanceController {
 
     private final UserService userService;
 
-
+    @RolesAllowed({RoleName.ROLE_USER, RoleName.ROLE_ADMIN})
     @PostMapping
     @Operation(description = "Update user balance",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -57,6 +59,7 @@ public class BalanceController {
         return ResponseEntity.ok().body(userBalance);
     }
 
+    @RolesAllowed({RoleName.ROLE_USER, RoleName.ROLE_ADMIN, RoleName.ROLE_COURIER})
     @GetMapping
     @Operation(description = "Get user balance",
             responses = {

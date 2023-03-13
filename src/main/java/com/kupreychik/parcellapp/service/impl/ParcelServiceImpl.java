@@ -119,12 +119,12 @@ public class ParcelServiceImpl implements ParcelService {
             log.info("Getting parcel by statuses: {} and user id: {}", statuses, userId);
             search = nonNull(search) ? search.toLowerCase() : "";
             var user = userService.findUserByUserId(userId);
-            var role = user.getRole().getName();
+            var role = user.getRole().getAuthority();
             Page<ParcelShortDTO> parcelPage;
-            if (role.equals(RoleName.ROLE_COURIER.name())) {
+            if (role.equals(RoleName.ROLE_COURIER)) {
                 log.info("Getting parcel by courier id: {}", userId);
                 parcelPage = parcelRepository.findAllByCourierIdAndStatus(userId, search, statuses, pageable);
-            } else if (role.equals(RoleName.ROLE_USER.name())) {
+            } else if (role.equals(RoleName.ROLE_USER)) {
                 log.info("Getting parcel by user id: {}", userId);
                 parcelPage = parcelRepository.findAllByCustomerIdAndStatus(userId, search, statuses, pageable);
             } else {
@@ -298,7 +298,7 @@ public class ParcelServiceImpl implements ParcelService {
      * @param courier courier
      */
     private void checkForUserIsCourier(User courier) {
-        if (!Objects.equals(courier.getRole().getName(), RoleName.ROLE_COURIER.name())) {
+        if (!Objects.equals(courier.getRole().getAuthority(), RoleName.ROLE_COURIER)) {
             throw createParcelException(UiError.USER_IS_NOT_COURIER);
         }
     }

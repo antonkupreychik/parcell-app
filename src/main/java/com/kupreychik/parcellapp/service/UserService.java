@@ -5,6 +5,7 @@ import com.kupreychik.parcellapp.command.UpdateUserBalanceCommand;
 import com.kupreychik.parcellapp.dto.UserBalanceDTO;
 import com.kupreychik.parcellapp.dto.UserShortDTO;
 import com.kupreychik.parcellapp.model.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public interface UserService {
 
@@ -17,4 +18,6 @@ public interface UserService {
     UserBalanceDTO updateUserBalance(UpdateUserBalanceCommand command);
 
     UserBalanceDTO getUserBalance(Long userId);
+
+    UserDetails loadUserByUsername(String username);
 }

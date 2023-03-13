@@ -5,61 +5,30 @@
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
     <changeSet id="parcel-1-0" author="Anton Kupreychik">
         <createTable tableName="users">
-            <column name="id" type="bigint" autoIncrement="true">
+            <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(255)">
-                <constraints nullable="false"/>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="email" type="varchar(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="password" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="role" type="bigint">
+            <column name="role" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
+
 
     <changeSet id="parcel-1-1" author="Anton Kupreychik">
-        <createTable tableName="roles">
-            <column name="id" type="bigint" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="name" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="parcel-1-3" author="Anton Kupreychik">
         <createSequence sequenceName="users_id_seq" startValue="1" incrementBy="1"/>
     </changeSet>
 
-    <changeSet id="parcel-1-4" author="Anton Kupreychik">
-        <insert tableName="roles">
-            <column name="id" value="1"/>
-            <column name="name" value="ROLE_ADMIN"/>
-        </insert>
-        <insert tableName="roles">
-            <column name="id" value="2"/>
-            <column name="name" value="ROLE_USER"/>
-        </insert>
-        <insert tableName="roles">
-            <column name="id" value="3"/>
-            <column name="name" value="ROLE_COURIER"/>
-        </insert>
-    </changeSet>
-
-    <changeSet id="parcel-1-5" author="Anton Kupreychik">
-        <addForeignKeyConstraint baseTableName="users" baseColumnNames="role"
-                                 constraintName="fk_users_role"
-                                 referencedTableName="roles" referencedColumnNames="id"/>
-    </changeSet>
-
-    <changeSet id="parcel-1-6" author="Anton Kupreychik">
+    <changeSet id="parcel-1-2" author="Anton Kupreychik">
         <createTable tableName="parcels">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -91,7 +60,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="parcel-1-7" author="Anton Kupreychik">
+    <changeSet id="parcel-1-3" author="Anton Kupreychik">
         <addForeignKeyConstraint baseTableName="parcels" baseColumnNames="user_id"
                                  constraintName="fk_parcel_user_id"
                                  referencedTableName="users"
@@ -99,8 +68,40 @@
                                  onDelete="CASCADE"/>
     </changeSet>
 
-    <changeSet id="parcel-1-8" author="Anton Kupreychik">
+    <changeSet id="parcel-1-4" author="Anton Kupreychik">
         <createSequence sequenceName="parcel_id_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="parcel-1-5" author="Anton Kupreychik">
+        <createTable tableName="roles">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="authority" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="parcel-1-6" author="Anton Kupreychik">
+        <createSequence sequenceName="roles_id_seq" startValue="1" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="parcel-1-7" author="Anton Kupreychik">
+        <insert tableName="roles">
+            <column name="id" value="1"/>
+            <column name="authority" value="ROLE_USER"/>
+        </insert>
+
+        <insert tableName="roles">
+            <column name="id" value="2"/>
+            <column name="authority" value="ROLE_ADMIN"/>
+        </insert>
+
+        <insert tableName="roles">
+            <column name="id" value="3"/>
+            <column name="authority" value="ROLE_COURIER"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

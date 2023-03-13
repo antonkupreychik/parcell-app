@@ -24,7 +24,7 @@ class UserServiceImplTest {
 
     CreateUserCommand correctCreateUserCommand = CreateUserCommand
             .builder()
-            .name("firstName")
+            .username("firstName")
             .password("password")
             .email("email@email.com")
             .build();
