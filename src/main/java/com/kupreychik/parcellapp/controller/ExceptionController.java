@@ -4,6 +4,10 @@ import com.kupreychik.parcellapp.dto.UiErrorDTO;
 import com.kupreychik.parcellapp.exception.ParcelException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +16,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 /**
  * Exception controller. Used to handle exceptions
@@ -52,5 +58,27 @@ public class ExceptionController {
             errors.put(fieldName, errorMessage);
         });
         return errors;
+    }
+
+    @ExceptionHandler(CredentialsExpiredException.class)
+    public ResponseEntity<UiErrorDTO> handleCredentialsExpiredException(CredentialsExpiredException ex) {
+        var uiErrorDTO = new UiErrorDTO("Invalid username or password", 0);
+        log.warn(ex.getMessage(), ex);
+        return ResponseEntity.status(UNAUTHORIZED).body(uiErrorDTO);
+    }
+
+
+    @ExceptionHandler(InternalAuthenticationServiceException.class)
+    public ResponseEntity<UiErrorDTO> handleInternalAuthenticationServiceException(InternalAuthenticationServiceException ex) {
+        var uiErrorDTO = new UiErrorDTO("Invalid username or password", 0);
+        log.warn(ex.getMessage(), ex);
+        return ResponseEntity.status(UNAUTHORIZED).body(uiErrorDTO);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<UiErrorDTO> handleAccessDeniedException(AccessDeniedException ex) {
+        var uiErrorDTO = new UiErrorDTO("Access denied", 401);
+        log.warn(ex.getMessage());
+        return ResponseEntity.status(UNAUTHORIZED).body(uiErrorDTO);
     }
 }

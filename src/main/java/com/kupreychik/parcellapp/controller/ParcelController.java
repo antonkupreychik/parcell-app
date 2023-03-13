@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import java.security.Principal;
 
 @Slf4j
 @RequestMapping("/api/v1/parcels")
@@ -66,8 +67,8 @@ public class ParcelController {
                     )
             },
             tags = {"Parcel"})
-    public ResponseEntity<ParcelDTO> createParcel(@Valid @RequestBody CreateParcelCommand parcelCommand, Long userId) {
-        var parcel = parcelService.createParcel(parcelCommand, userId);
+    public ResponseEntity<ParcelDTO> createParcel(@Valid @RequestBody CreateParcelCommand parcelCommand, Principal principal) {
+        var parcel = parcelService.createParcel(parcelCommand, principal);
         return ResponseEntity.ok().body(parcel);
     }
 
@@ -77,7 +78,6 @@ public class ParcelController {
     @Operation(description = "Get parcels by status and user id",
             summary = "Get parcels by status and user id",
             parameters = {
-                    @Parameter(name = "userId", description = "User id", required = true),
                     @Parameter(name = "statuses", description = "Parcel statuses", required = true)
             },
             responses = {
@@ -101,9 +101,10 @@ public class ParcelController {
                                                                       @RequestParam(value = "sort", required = false, defaultValue = "name") String sortField,
                                                                       @RequestParam(value = "direction", required = false, defaultValue = "ASC") Sort.Direction direction,
                                                                       @RequestParam(value = "userId") Long userId,
-                                                                      @RequestParam(value = "statuses") ParcelStatus[] statuses) {
+                                                                      @RequestParam(value = "statuses") ParcelStatus[] statuses,
+                                                                      Principal principal) {
         Pageable pageable = PageRequest.of(page, size, direction, sortField);
-        var parcels = parcelService.getMyParcels(statuses, userId, search, pageable);
+        var parcels = parcelService.getMyParcels(userId, statuses, search, pageable, principal);
         return ResponseEntity.ok().body(parcels);
     }
 
@@ -127,8 +128,8 @@ public class ParcelController {
             },
             tags = {"Parcel"})
     public ResponseEntity<ParcelDTO> getParcelById(@PathVariable Long id,
-                                                   @RequestParam(value = "userId") Long userId) {
-        var parcel = parcelService.getParcelById(userId, id);
+                                                   Principal principal) {
+        var parcel = parcelService.getParcelById(id, principal);
         return ResponseEntity.ok().body(parcel);
     }
 
@@ -161,8 +162,8 @@ public class ParcelController {
             tags = {"Parcel"})
     public ResponseEntity<ParcelDTO> updateParcelAddress(@PathVariable Long parcelId,
                                                          @Valid @RequestBody CreateAddressCommand command,
-                                                         @RequestParam(value = "userId") Long userId) {
-        var parcel = parcelService.updateParcelAddress(userId, parcelId, command);
+                                                         Principal principal) {
+        var parcel = parcelService.updateParcelAddress(parcelId, command, principal);
         return ResponseEntity.ok().body(parcel);
     }
 
@@ -186,8 +187,8 @@ public class ParcelController {
             },
             tags = {"Parcel"})
     public ResponseEntity<ParcelDTO> cancelParcel(@PathVariable Long parcelId,
-                                                  @RequestParam(value = "userId") Long userId) {
-        parcelService.cancelParcel(userId, parcelId);
+                                                  Principal principal) {
+        parcelService.cancelParcel(parcelId, principal);
         return ResponseEntity.noContent().build();
     }
 
@@ -236,8 +237,8 @@ public class ParcelController {
             },
             tags = {"Parcel"})
     public ResponseEntity<ParcelDTO> changeParcelStatus(@PathVariable Long parcelId,
-                                                        @PathVariable ParcelStatus status) {
-        var parcel = parcelService.changeParcelStatus(parcelId, status);
+                                                        @PathVariable ParcelStatus status, Principal principal) {
+        var parcel = parcelService.changeParcelStatus(parcelId, status, principal);
         return ResponseEntity.ok().body(parcel);
     }
 }

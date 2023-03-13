@@ -17,8 +17,8 @@ public class UserShortDTO {
 
     @Schema(description = "Id of user", example = "1")
     private Long id;
-    @Schema(description = "Name of user", example = "User 1")
-    private String name;
+    @Schema(description = "Username of user", example = "User 1")
+    private String username;
     @Schema(description = "Email of user", example = "email@email.com")
     private String email;
 }

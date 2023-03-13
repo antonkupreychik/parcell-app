@@ -5,44 +5,27 @@ import com.kupreychik.parcellapp.command.CreateUserCommand;
 import com.kupreychik.parcellapp.dto.UiErrorDTO;
 import com.kupreychik.parcellapp.dto.UserLoginDTO;
 import com.kupreychik.parcellapp.dto.UserShortDTO;
-import com.kupreychik.parcellapp.model.User;
-import com.kupreychik.parcellapp.service.UserService;
+import com.kupreychik.parcellapp.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.time.Instant;
-
-import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
 
 @Slf4j
 @RequestMapping("/api/v1/auth")
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtEncoder jwtEncoder;
+    private final AuthService authService;
 
     @PostMapping("/register")
     @Operation(description = "Create user",
@@ -66,8 +49,7 @@ public class AuthController {
             },
             tags = {"Auth"})
     public ResponseEntity<UserShortDTO> createUser(@Valid @RequestBody CreateUserCommand command) {
-        command.setPassword(passwordEncoder.encode(command.getPassword()));
-        var user = userService.createUser(command);
+        var user = authService.createUser(command);
         return ResponseEntity.ok().body(user);
     }
 
@@ -93,7 +75,7 @@ public class AuthController {
             },
             tags = {"Auth"})
     public ResponseEntity<UserShortDTO> createCourier(@Valid @RequestBody CreateUserCommand command) {
-        var courier = userService.createCourier(command);
+        var courier = authService.createCourier(command);
         return ResponseEntity.ok().body(courier);
     }
 
@@ -118,34 +100,8 @@ public class AuthController {
                                     schema = @Schema(implementation = UiErrorDTO.class)))
             },
             tags = {"Auth"})
-    public ResponseEntity<User> login(@RequestBody @Valid AuthCommand request) {
-        try {
-            var authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-
-            var user = (User) authentication.getPrincipal();
-
-            var now = Instant.now();
-            var expiry = 36000L;
-
-            var scope = authentication.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(joining(" "));
-
-            var claims = JwtClaimsSet.builder()
-                    .issuer("example.io")
-                    .issuedAt(now)
-                    .expiresAt(now.plusSeconds(expiry))
-                    .subject(format("%s,%s", user.getId(), user.getUsername()))
-                    .claim("roles", scope)
-                    .build();
-
-            var token = this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(user);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<UserLoginDTO> login(@RequestBody @Valid AuthCommand request) {
+        var user = authService.login(request);
+        return ResponseEntity.ok().body(user);
     }
 }

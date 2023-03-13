@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import java.security.Principal;
 
 /**
  * User controller
@@ -61,7 +63,9 @@ public class BalanceController {
 
     @RolesAllowed({RoleName.ROLE_USER, RoleName.ROLE_ADMIN, RoleName.ROLE_COURIER})
     @GetMapping
-    @Operation(description = "Get user balance",
+    @Operation(summary = "Get user balance",
+            description = "Get user balance. If user who makes request is admin, he can view all users balance." +
+                    " If user is courier or customer he can view only his balance. To get himself balance he should not pass userId parameter",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -77,8 +81,9 @@ public class BalanceController {
                                     schema = @Schema(implementation = UiErrorDTO.class)))
             },
             tags = {"Balance"})
-    public ResponseEntity<UserBalanceDTO> getUserBalance(Long userId) {
-        var userBalance = userService.getUserBalance(userId);
+    public ResponseEntity<UserBalanceDTO> getUserBalance(@RequestParam(required = false) Long userId,
+                                                         Principal principal) {
+        var userBalance = userService.getUserBalance(userId, principal);
         return ResponseEntity.ok().body(userBalance);
     }
 }

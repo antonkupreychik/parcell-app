@@ -1,15 +1,12 @@
 package com.kupreychik.parcellapp.service.impl;
 
-import com.kupreychik.parcellapp.command.CreateUserCommand;
 import com.kupreychik.parcellapp.command.UpdateUserBalanceCommand;
 import com.kupreychik.parcellapp.dto.UserBalanceDTO;
-import com.kupreychik.parcellapp.dto.UserShortDTO;
 import com.kupreychik.parcellapp.enums.OperationType;
 import com.kupreychik.parcellapp.enums.RoleName;
 import com.kupreychik.parcellapp.exception.UiError;
 import com.kupreychik.parcellapp.mapper.UserMapper;
 import com.kupreychik.parcellapp.model.User;
-import com.kupreychik.parcellapp.repository.RoleRepository;
 import com.kupreychik.parcellapp.repository.UserRepository;
 import com.kupreychik.parcellapp.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 
 import static com.kupreychik.parcellapp.exception.ParcelExceptionUtils.createParcelException;
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 
 /**
  * User service
@@ -32,58 +31,20 @@ import static java.lang.String.format;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
-    private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    /**
-     * Create user
-     *
-     * @param createUserCommand command to create user
-     * @return created user
-     */
-    @Override
-    @Transactional
-    public UserShortDTO createUser(CreateUserCommand createUserCommand) {
-        try {
-            log.info("Creating user with command: {}", createUserCommand);
-            checkForEmailAlreadyExist(createUserCommand);
-            User user = userMapper.mapToEntity(createUserCommand);
-            setRoleForUser(user, RoleName.ROLE_USER);
-            user = userRepository.save(user);
-            log.info("User created with id: {}", user.getId());
-            return userMapper.mapToDTO(user);
-        } catch (Exception e) {
-            log.error("Error while creating user. Command: {}", createUserCommand, e);
-            throw e;
-        }
-    }
-
-    /**
-     * Create courier
-     *
-     * @param createUserCommand command to create courier
-     * @return created courier
-     */
-    @Override
-    @Transactional
-    public UserShortDTO createCourier(CreateUserCommand createUserCommand) {
-        try {
-            log.info("Creating courier with command: {}", createUserCommand);
-            checkForEmailAlreadyExist(createUserCommand);
-            User user = userMapper.mapToEntity(createUserCommand);
-            setRoleForUser(user, RoleName.ROLE_COURIER);
-            user = userRepository.save(user);
-            log.info("Courier created with id: {}", user.getId());
-            return userMapper.mapToDTO(user);
-        } catch (Exception e) {
-            log.error("Error while creating courier with command: {}", createUserCommand, e);
-            throw e;
-        }
-    }
 
     @Override
+    @Transactional
     public User findUserByUserId(Long userId) {
         return userRepository.findById(userId)
+                .orElseThrow(() -> createParcelException(UiError.USER_NOT_FOUND));
+    }
+
+    @Override
+    @Transactional
+    public User findUserByPrincipal(Principal principal) {
+        return userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> createParcelException(UiError.USER_NOT_FOUND));
     }
 
@@ -116,12 +77,26 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
     }
 
+    /**
+     * Method available for admin only or for user himself
+     *
+     * @param userId    user id
+     * @param principal principal
+     * @return user balance
+     */
     @Override
-    public UserBalanceDTO getUserBalance(Long userId) {
+    @Transactional
+    public UserBalanceDTO getUserBalance(Long userId, Principal principal) {
         try {
-            log.info("Getting user balance with id: {}", userId);
-            User user = findUserByUserId(userId);
-            return userMapper.mapToUserBalanceDTO(user);
+            User userWhoMakesRequest = findUserByPrincipal(principal);
+            if (isNull(userId)) {
+                return userMapper.mapToUserBalanceDTO(userWhoMakesRequest);
+            } else if (userWhoMakesRequest.getRole().getAuthority().equals(RoleName.ROLE_ADMIN)) {
+                User user = findUserByUserId(userId);
+                return userMapper.mapToUserBalanceDTO(user);
+            } else {
+                throw createParcelException(UiError.USER_NOT_FOUND);
+            }
         } catch (Exception e) {
             log.error("Error while getting user balance with id: {}", userId);
             throw e;
@@ -155,42 +130,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setBalance(balance);
     }
 
-    /**
-     * Check if email already exists. If exist throw exception
-     *
-     * @param createUserCommand command to create user
-     */
-    private void checkForEmailAlreadyExist(CreateUserCommand createUserCommand) {
-        if (isEmailExist(createUserCommand.getEmail())) {
-            throw createParcelException(UiError.EMAIL_ALREADY_EXIST);
-        }
-    }
-
-    /**
-     * Find a role by name and set it to user
-     *
-     * @param user user
-     * @param role role
-     */
-    private void setRoleForUser(User user, String role) {
-        roleRepository.findByAuthority(role).ifPresentOrElse(
-                user::setRole,
-                () -> {
-                    throw createParcelException(UiError.ROLE_NOT_FOUND);
-                });
-    }
-
-
-    /**
-     * Check if email already exists
-     *
-     * @param email email
-     * @return true, if email already exists
-     */
-    private boolean isEmailExist(String email) {
-        return userRepository.findByEmail(email).isPresent();
-    }
-
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -201,5 +140,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                                 new UsernameNotFoundException(
                                         format("User with username - %s, not found", username)));
     }
+
 
 }

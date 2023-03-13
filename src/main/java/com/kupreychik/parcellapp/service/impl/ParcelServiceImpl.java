@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.Objects;
 
 import static com.kupreychik.parcellapp.enums.ConfigName.COUNT_OF_ACTIVE_PARCELS_PER_COURIER;
@@ -82,13 +83,14 @@ public class ParcelServiceImpl implements ParcelService {
      * Create parcel
      *
      * @param createParcelCommand command with parcel data
-     * @param userId              user id
+     * @param principal           principal
      * @return {@link ParcelDTO} with parcel data
      */
     @Override
     @Transactional
-    public ParcelDTO createParcel(CreateParcelCommand createParcelCommand, Long userId) {
+    public ParcelDTO createParcel(CreateParcelCommand createParcelCommand, Principal principal) {
         try {
+            Long userId = userService.findUserByPrincipal(principal).getId();
             log.info("Creating parcel with command: {}", createParcelCommand);
             if (createParcelMiddleware.check(createParcelCommand) && checkForAvailableToCreateParcel(createParcelCommand, userId)) {
                 var parcel = parcelMapper.mapToEntity(createParcelCommand);
@@ -107,15 +109,20 @@ public class ParcelServiceImpl implements ParcelService {
     /**
      * Get parcel page by status
      *
-     * @param statuses   parcel statuses
+     * @param statuses parcel statuses
      * @param userId   user id
      * @param pageable pageable
      * @return {@link PageDTO} with parcel data
      */
     @Override
     @Transactional
-    public PageDTO<ParcelShortDTO> getMyParcels(ParcelStatus[] statuses, Long userId, String search, Pageable pageable) {
+    public PageDTO<ParcelShortDTO> getMyParcels(Long userId, ParcelStatus[] statuses, String search, Pageable pageable, Principal principal) {
         try {
+            if (Objects.isNull(userId)) {
+                userId = userService.findUserByPrincipal(principal).getId();
+            } else if (!userService.findUserByPrincipal(principal).getRole().getAuthority().equals(RoleName.ROLE_ADMIN)) {
+                throw createParcelException(UiError.USER_NOT_FOUND);
+            }
             log.info("Getting parcel by statuses: {} and user id: {}", statuses, userId);
             search = nonNull(search) ? search.toLowerCase() : "";
             var user = userService.findUserByUserId(userId);
@@ -140,15 +147,16 @@ public class ParcelServiceImpl implements ParcelService {
     /**
      * Update parcel address by parcel id
      *
-     * @param userId               user id
+     * @param principal            principal
      * @param parcelId             parcel id
      * @param createAddressCommand address data
      * @return {@link ParcelDTO} with parcel data
      */
     @Override
     @Transactional
-    public ParcelDTO updateParcelAddress(Long userId, Long parcelId, CreateAddressCommand createAddressCommand) {
+    public ParcelDTO updateParcelAddress(Long parcelId, CreateAddressCommand createAddressCommand, Principal principal) {
         try {
+            Long userId = userService.findUserByPrincipal(principal).getId();
             log.info("Updating parcel address. Parcel id: {}, address: {}", parcelId, createAddressCommand);
             var parcel = parcelRepository.getReferenceById(parcelId);
             checkForParcelOwner(userId, parcel);
@@ -168,13 +176,14 @@ public class ParcelServiceImpl implements ParcelService {
     /**
      * Cancel parcel
      *
-     * @param userId   user id
-     * @param parcelId parcel id
+     * @param principal principal
+     * @param parcelId  parcel id
      */
     @Override
     @Transactional
-    public void cancelParcel(Long userId, Long parcelId) {
+    public void cancelParcel(Long parcelId, Principal principal) {
         try {
+            Long userId = userService.findUserByPrincipal(principal).getId();
             log.info("Canceling parcel. Parcel id: {}", parcelId);
             var parcel = parcelRepository.getReferenceById(parcelId);
             checkForParcelOwner(userId, parcel);
@@ -187,24 +196,6 @@ public class ParcelServiceImpl implements ParcelService {
             log.error("Error while canceling parcel. Parcel id: {}", parcelId, e);
             throw e;
         }
-    }
-
-    private void returnMoneyToUser(Long userId, Parcel parcel) {
-        ParcelStatus status = parcel.getStatus();
-        BigDecimal actualPriceForParcel = parcel.getPrice();
-        log.info("Return money to user. Parcel id: {}, status: {}, actual price: {}", parcel.getId(), status, actualPriceForParcel);
-        if (status == ParcelStatus.ASSIGNED) {
-            Double returnPercentForAssignStatus = configService.getAsDouble(PERCENT_OF_CANCEL_IN_ASSIGNED_STATUS);
-            BigDecimal returnMoney = actualPriceForParcel.multiply(BigDecimal.valueOf(returnPercentForAssignStatus));
-            processPaymentForUser(userId, returnMoney, OperationType.ADD);
-        } else if (status == ParcelStatus.IN_PROGRESS) {
-            Double returnPercentForInProgressStatus = configService.getAsDouble(PERCENT_OF_CANCEL_IN_IN_PROGRESS_STATUS);
-            BigDecimal returnMoney = actualPriceForParcel.multiply(BigDecimal.valueOf(returnPercentForInProgressStatus));
-            processPaymentForUser(userId, returnMoney, OperationType.ADD);
-        } else if (status == ParcelStatus.NEW) {
-            processPaymentForUser(userId, actualPriceForParcel, OperationType.ADD);
-        }
-        log.info("Money returned to user. Parcel id: {}, status: {}, actual price: {}", parcel.getId(), status, actualPriceForParcel);
     }
 
     /**
@@ -244,16 +235,21 @@ public class ParcelServiceImpl implements ParcelService {
      */
     @Override
     @Transactional
-    public ParcelDTO changeParcelStatus(Long parcelId, ParcelStatus status) {
+    public ParcelDTO changeParcelStatus(Long parcelId, ParcelStatus status, Principal principal) {
         try {
+
             log.info("Changing parcel status. Parcel id: {}, status: {}", parcelId, status);
             var parcel = parcelRepository.getReferenceById(parcelId);
-            parcel.setStatus(status);
-            parcel = parcelRepository.save(parcel);
-            var parcelDTO = parcelMapper.mapToDTO(parcel);
-            log.info("Parcel status changed. Parcel id: {}, status: {}", parcelId, status);
-            parcelHistoryService.changeStatus(parcel.getId(), status);
-            return parcelDTO;
+            if (isAvailableToChangeStatus(principal, parcel)) {
+                parcel.setStatus(status);
+                parcel = parcelRepository.save(parcel);
+                var parcelDTO = parcelMapper.mapToDTO(parcel);
+                log.info("Parcel status changed. Parcel id: {}, status: {}", parcelId, status);
+                parcelHistoryService.changeStatus(parcel.getId(), status);
+                return parcelDTO;
+            } else {
+                throw createParcelException(UiError.PARCEL_NOT_ASSIGNED_TO_COURIER);
+            }
         } catch (Exception e) {
             log.error("Error while changing parcel status. Parcel id: {}, status: {}", parcelId, status, e);
             throw e;
@@ -269,6 +265,29 @@ public class ParcelServiceImpl implements ParcelService {
             return new PageDTO<>(parcelPage, pageable);
         } catch (Exception e) {
             log.error("Error while getting all parcels", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Get parcel by id
+     *
+     * @param principal principal
+     * @param parcelId  parcel id
+     * @return {@link ParcelDTO} with parcel data
+     */
+    @Override
+    public ParcelDTO getParcelById(Long parcelId, Principal principal) {
+        try {
+            Long userId = userService.findUserByPrincipal(principal).getId();
+            log.info("Getting parcel by id: {}", parcelId);
+            var parcel = parcelRepository.getReferenceById(parcelId);
+            checkForParcelOwner(userId, parcel);
+            var parcelDTO = parcelMapper.mapToDTO(parcel);
+            parcelDTO.setAddress(addressService.getAddressById(parcel.getAddress().getId()));
+            return parcelDTO;
+        } catch (Exception e) {
+            log.error("Error while getting parcel by id: {}", parcelId, e);
             throw e;
         }
     }
@@ -314,27 +333,6 @@ public class ParcelServiceImpl implements ParcelService {
         }
     }
 
-    /**
-     * Get parcel by id
-     *
-     * @param userId   user id
-     * @param parcelId parcel id
-     * @return {@link ParcelDTO} with parcel data
-     */
-    @Override
-    public ParcelDTO getParcelById(Long userId, Long parcelId) {
-        try {
-            log.info("Getting parcel by id: {}", parcelId);
-            var parcel = parcelRepository.getReferenceById(parcelId);
-            checkForParcelOwner(userId, parcel);
-            var parcelDTO = parcelMapper.mapToDTO(parcel);
-            parcelDTO.setAddress(addressService.getAddressById(parcel.getAddress().getId()));
-            return parcelDTO;
-        } catch (Exception e) {
-            log.error("Error while getting parcel by id: {}", parcelId, e);
-            throw e;
-        }
-    }
 
     /**
      * Check if parcel belongs to the user. If not - throw exception
@@ -525,6 +523,43 @@ public class ParcelServiceImpl implements ParcelService {
                 .userId(userId)
                 .build();
         userService.updateUserBalance(withdrawMoneyCommand);
+    }
+
+
+    /**
+     * Check if a parcel is assigned to courier or user is admin
+     *
+     * @param principal principal
+     * @param parcel    parcel
+     * @return true if parcel is assigned to courier or user is admin
+     */
+    private boolean isAvailableToChangeStatus(Principal principal, Parcel parcel) {
+        return parcel.getCourier().getId().equals(userService.findUserByPrincipal(principal).getId()) ||
+                userService.findUserByPrincipal(principal).getRole().getAuthority().equals(RoleName.ROLE_ADMIN);
+    }
+
+    /**
+     * Calculate price to return to the user and process payment
+     *
+     * @param userId user id
+     * @param parcel parcel
+     */
+    private void returnMoneyToUser(Long userId, Parcel parcel) {
+        ParcelStatus status = parcel.getStatus();
+        BigDecimal actualPriceForParcel = parcel.getPrice();
+        log.info("Return money to user. Parcel id: {}, status: {}, actual price: {}", parcel.getId(), status, actualPriceForParcel);
+        if (status == ParcelStatus.ASSIGNED) {
+            Double returnPercentForAssignStatus = configService.getAsDouble(PERCENT_OF_CANCEL_IN_ASSIGNED_STATUS);
+            BigDecimal returnMoney = actualPriceForParcel.multiply(BigDecimal.valueOf(returnPercentForAssignStatus));
+            processPaymentForUser(userId, returnMoney, OperationType.ADD);
+        } else if (status == ParcelStatus.IN_PROGRESS) {
+            Double returnPercentForInProgressStatus = configService.getAsDouble(PERCENT_OF_CANCEL_IN_IN_PROGRESS_STATUS);
+            BigDecimal returnMoney = actualPriceForParcel.multiply(BigDecimal.valueOf(returnPercentForInProgressStatus));
+            processPaymentForUser(userId, returnMoney, OperationType.ADD);
+        } else if (status == ParcelStatus.NEW) {
+            processPaymentForUser(userId, actualPriceForParcel, OperationType.ADD);
+        }
+        log.info("Money returned to user. Parcel id: {}, status: {}, actual price: {}", parcel.getId(), status, actualPriceForParcel);
     }
 
 }

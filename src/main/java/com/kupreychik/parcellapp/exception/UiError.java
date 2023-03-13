@@ -28,7 +28,10 @@ public enum UiError {
     BALANCE_IS_NOT_ENOUGH("Balance is not enough", 16),
     MIN_PRICE_PER_ONE_PARCEL_REACHED("Min price per one parcel reached", 17),
     MAX_PRICE_PER_ONE_PARCEL_REACHED("Max price per one parcel reached", 18),
-    PARCEL_PRICE_CALCULATION_ERROR("Parcel price calculation error", 19);
+    PARCEL_PRICE_CALCULATION_ERROR("Parcel price calculation error", 19),
+    USERNAME_OR_PASSWORD_INCORRECT("Username or password incorrect", 20),
+    INVALID_JWT("Invalid JWT", 21),
+    PARCEL_NOT_ASSIGNED_TO_COURIER("Parcel not assigned to courier", 22);
     /**
      * Message of error which will be shown to user
      */

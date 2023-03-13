@@ -8,21 +8,23 @@ import com.kupreychik.parcellapp.dto.ParcelShortDTO;
 import com.kupreychik.parcellapp.enums.ParcelStatus;
 import org.springframework.data.domain.Pageable;
 
+import java.security.Principal;
+
 public interface ParcelService {
 
-    ParcelDTO createParcel(CreateParcelCommand createParcelCommand, Long userId);
+    ParcelDTO createParcel(CreateParcelCommand createParcelCommand, Principal principal);
 
-    ParcelDTO getParcelById(Long userId, Long parcelId);
+    ParcelDTO getParcelById(Long parcelId, Principal principal);
 
-    PageDTO<ParcelShortDTO> getMyParcels(ParcelStatus[] statuses, Long userId, String search, Pageable pageable);
+    PageDTO<ParcelShortDTO> getMyParcels(Long userId, ParcelStatus[] statuses, String search, Pageable pageable, Principal principal);
 
-    ParcelDTO updateParcelAddress(Long userId, Long parcelId, CreateAddressCommand createAddressCommand);
+    ParcelDTO updateParcelAddress(Long parcelId, CreateAddressCommand createAddressCommand, Principal principal);
 
-    void cancelParcel(Long userId, Long parcelId);
+    void cancelParcel(Long parcelId, Principal principal);
 
     ParcelDTO assignCourier(Long parcelId, Long courierId);
 
-    ParcelDTO changeParcelStatus(Long parcelId, ParcelStatus status);
+    ParcelDTO changeParcelStatus(Long parcelId, ParcelStatus status, Principal principal);
 
     PageDTO<ParcelShortDTO> getAllParcels(Pageable pageable);
 }
