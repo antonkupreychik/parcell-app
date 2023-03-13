@@ -1,8 +1,10 @@
 package com.kupreychik.parcellapp.controller;
 
 import com.kupreychik.parcellapp.command.CreateUserCommand;
+import com.kupreychik.parcellapp.command.UpdateUserBalanceCommand;
 import com.kupreychik.parcellapp.dto.UiErrorDTO;
-import com.kupreychik.parcellapp.dto.UserDTO;
+import com.kupreychik.parcellapp.dto.UserBalanceDTO;
+import com.kupreychik.parcellapp.dto.UserShortDTO;
 import com.kupreychik.parcellapp.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,7 +43,7 @@ public class UserController {
                             description = "User created",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = UserDTO.class))),
+                                    schema = @Schema(implementation = UserShortDTO.class))),
                     @ApiResponse(
                             responseCode = "400",
                             description = "Bad request",
@@ -50,7 +52,7 @@ public class UserController {
                                     schema = @Schema(implementation = UiErrorDTO.class)))
             },
             tags = {"User"})
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody CreateUserCommand command) {
+    public ResponseEntity<UserShortDTO> createUser(@Valid @RequestBody CreateUserCommand command) {
         var user = userService.createUser(command);
         return ResponseEntity.ok().body(user);
     }
@@ -73,12 +75,39 @@ public class UserController {
                             description = "Courier request",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = UserDTO.class)))
+                                    schema = @Schema(implementation = UserShortDTO.class)))
             },
             tags = {"User"})
-    public ResponseEntity<UserDTO> createCourier(@Valid @RequestBody  CreateUserCommand command) {
+    public ResponseEntity<UserShortDTO> createCourier(@Valid @RequestBody CreateUserCommand command) {
         var courier = userService.createCourier(command);
         return ResponseEntity.ok().body(courier);
+    }
+
+    //only for admin and user himself
+    @PostMapping("/balance")
+    @Operation(description = "Update user balance",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UpdateUserBalanceCommand.class))),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "User balance updated",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserBalanceDTO.class))),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Bad request",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UiErrorDTO.class)))
+            },
+            tags = {"User"})
+    public ResponseEntity<UserBalanceDTO> updateUserBalance(@Valid @RequestBody UpdateUserBalanceCommand command) {
+        var userBalance = userService.updateUserBalance(command);
+        return ResponseEntity.ok().body(userBalance);
     }
 
 

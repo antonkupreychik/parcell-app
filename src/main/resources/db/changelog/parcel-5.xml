@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <changeSet id="parcel-5-0" author="Anton Kupreichyk">
+        <addColumn tableName="users">
+            <column name="balance" type="decimal(10,2)" defaultValue="0.00">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="parcel-5-1" author="Anton Kupreichyk">
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MIN_PRICE_PER_ONE_PARCEL"/>
+            <column name="value" value="0.01"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MAX_PRICE_PER_ONE_PARCEL"/>
+            <column name="value" value="1000.00"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MIN_WEIGHT_PER_ONE_PARCEL"/>
+            <column name="value" value="0.01"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MAX_WEIGHT_PER_ONE_PARCEL"/>
+            <column name="value" value="1000.00"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MIN_LENGTH_PER_ONE_PARCEL"/>
+            <column name="value" value="0.01"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MAX_LENGTH_PER_ONE_PARCEL"/>
+            <column name="value" value="1000.00"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MIN_WIDTH_PER_ONE_PARCEL"/>
+            <column name="value" value="0.01"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MAX_WIDTH_PER_ONE_PARCEL"/>
+            <column name="value" value="1000.00"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MIN_HEIGHT_PER_ONE_PARCEL"/>
+            <column name="value" value="0.01"/>
+        </insert>
+
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="MAX_HEIGHT_PER_ONE_PARCEL"/>
+            <column name="value" value="1000.00"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="PRICE_PER_ONE_KG"/>
+            <column name="value" value="12.80"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="PRICE_PER_ONE_KM"/>
+            <column name="value" value="0.78"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="PERCENT_OF_CANCEL_IN_ASSIGNED_STATUS"/>
+            <column name="value" value="80"/>
+        </insert>
+
+        <insert tableName="config">
+            <column name="id" valueSequenceNext="config_id_seq"/>
+            <column name="name" value="PERCENT_OF_CANCEL_IN_IN_PROGRESS_STATUS"/>
+            <column name="value" value="40"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="parcel-5-2" author="Anton Kupreichyk">
+        <addColumn tableName="parcels">
+            <column name="price" type="decimal(10,2)" defaultValue="0.00">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="parcel-5-3" author="Anton Kupreichyk">
+        <addColumn tableName="users">
+            <column name="coordinates" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="parcel-5-4" author="Anton Kupreichyk">
+        <addColumn tableName="address">
+            <column name="coordinates" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

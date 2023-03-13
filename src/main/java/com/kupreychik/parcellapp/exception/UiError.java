@@ -22,7 +22,13 @@ public enum UiError {
     COURIER_LIMIT_PER_PARCEL_EXCEEDED("Courier limit per parcel exceeded", 10),
     PARCEL_ALREADY_ASSIGNED_TO_COURIER("Parcel already assigned to courier", 11),
     MAX_PARCEL_COUNT_REACHED("Max parcel count reached", 12),
-    CONFIG_NOT_FOUND("Config not found", 13);
+    CONFIG_NOT_FOUND("Config not found", 13),
+    PARCEL_PARAMS_NOT_VALID("Parcel params not valid", 14),
+    OPERATION_TYPE_NOT_FOUND("Operation type not found", 15),
+    BALANCE_IS_NOT_ENOUGH("Balance is not enough", 16),
+    MIN_PRICE_PER_ONE_PARCEL_REACHED("Min price per one parcel reached", 17),
+    MAX_PRICE_PER_ONE_PARCEL_REACHED("Max price per one parcel reached", 18),
+    PARCEL_PRICE_CALCULATION_ERROR("Parcel price calculation error", 19);
     /**
      * Message of error which will be shown to user
      */

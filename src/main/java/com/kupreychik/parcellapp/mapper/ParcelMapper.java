@@ -15,10 +15,12 @@ public interface ParcelMapper {
     /**
      * Map parcel command to parcel entity
      *
-     * @param createParcelCommand create parcel command
+     * @param command create parcel command
      * @return parcel
      */
-    Parcel mapToEntity(CreateParcelCommand createParcelCommand);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "address.coordinates", expression = "java(createAddressCommand.getCoordinates().getLatitude() + \", \" + createAddressCommand.getCoordinates().getLongitude())")
+    Parcel mapToEntity(CreateParcelCommand command);
 
     @Mapping(target = "address", ignore = true)
     ParcelDTO mapToDTO(Parcel parcel);

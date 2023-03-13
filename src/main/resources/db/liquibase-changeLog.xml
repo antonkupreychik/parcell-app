@@ -8,4 +8,5 @@
     <include file="changelog/parcel-2.xml" relativeToChangelogFile="true"/>
     <include file="changelog/parcel-3.xml" relativeToChangelogFile="true"/>
     <include file="changelog/parcel-4.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/parcel-5.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

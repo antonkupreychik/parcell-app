@@ -5,9 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -38,11 +41,15 @@ public class CreateUserCommand implements Command {
     @Schema(description = "Password of user", example = "password")
     private String password;
 
+    @NotNull
+    private CoordinatesCommand coordinates;
+
     @Override
     public String toString() {
-        return "CreateUserCommand{" +
-                "name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                '}';
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("name", name)
+                .append("email", email)
+                .append("coordinates", coordinates)
+                .toString();
     }
 }

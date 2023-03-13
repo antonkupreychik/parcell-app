@@ -19,6 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
@@ -56,6 +57,9 @@ public class Parcel {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ParcelStatus status;
+
+    @Column(name = "price")
+    private BigDecimal price;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")

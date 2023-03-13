@@ -1,9 +1,10 @@
 package com.kupreychik.parcellapp.service;
 
+import com.kupreychik.parcellapp.enums.ConfigName;
+
 public interface ConfigService {
 
-    Long getCountOfActiveParcelsPerCourier();
+    Double getAsDouble(ConfigName name);
 
-    Long getCountOfActiveParcelsPerUser();
-
+    Long getAsLong(ConfigName name);
 }

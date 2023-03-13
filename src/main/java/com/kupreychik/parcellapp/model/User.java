@@ -17,6 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -41,6 +42,12 @@ public class User {
 
     @Column(name = "password")
     private String password;
+
+    @Column(name = "balance")
+    private BigDecimal balance;
+
+    @Column(name = "coordinates")
+    private String coordinates;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role", referencedColumnName = "id")

@@ -32,4 +32,7 @@ public class AddressDTO {
 
     @Schema(description = "Zip code of address", example = "01001")
     private String zipCode;
+
+    @Schema(description = "Coordinates of address", example = "50.4501, 30.5234")
+    private String coordinates;
 }

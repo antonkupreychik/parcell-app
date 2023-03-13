@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @Schema(description = "User DTO")
-public class UserDTO {
+public class UserShortDTO {
 
     @Schema(description = "Id of user", example = "1")
     private Long id;

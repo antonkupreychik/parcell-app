@@ -4,7 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -12,7 +13,6 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Getter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "Create address command")
@@ -47,4 +47,21 @@ public class CreateAddressCommand implements Command {
     @Pattern(regexp = "^[0-9]*$")
     @Schema(description = "Zip code of address", example = "01001")
     private String zipCode;
+
+    @NotNull
+    @Schema(description = "Coordinates of parcel destination")
+    private CoordinatesCommand coordinates;
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("country", country)
+                .append("city", city)
+                .append("street", street)
+                .append("houseNumber", houseNumber)
+                .append("apartmentNumber", apartmentNumber)
+                .append("zipCode", zipCode)
+                .append("coordinates", coordinates)
+                .toString();
+    }
 }
